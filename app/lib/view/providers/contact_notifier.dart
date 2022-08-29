@@ -11,9 +11,9 @@ class ContactNotifier extends ChangeNotifier {
   bool get reload => _reload;
 
   // Setters
-  void setContact(Contact? contact) {
+  void setContact(Contact? contact, {notify = true}) {
     _selectedContact = contact;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
   void setReload(bool value, {notify = false}) {

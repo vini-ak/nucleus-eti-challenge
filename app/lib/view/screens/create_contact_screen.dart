@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_contacts/contact.dart';
+import 'package:flutter_contacts/properties/address.dart';
+import 'package:flutter_contacts/properties/email.dart';
+import 'package:flutter_contacts/properties/phone.dart';
 import 'package:nucleus_agenda/infrastructure/locator.dart';
 import 'package:nucleus_agenda/view/components/dialogs/delete_contact_dialog.dart';
 import 'package:nucleus_agenda/view/components/input_component.dart';
@@ -30,7 +33,7 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
     // Criando instância do provider se ela for nula.
     _notifier ??= Provider.of<ContactNotifier>(context);
 
-    var selectedContact = _notifier!.selectedContact;
+    var selectedContact = _notifier!.selectedContact ?? Contact();
 
     return Scaffold(
       appBar: _buildAppBar(),
@@ -38,22 +41,23 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
     );
   }
 
-  _buildBody(Contact? contact) => SingleChildScrollView(
+  _buildBody(Contact contact) => SingleChildScrollView(
         padding: const EdgeInsets.symmetric(
             vertical: Spaces.large, horizontal: Spaces.small),
         child: Column(children: [
-          // Nome
+          //
           InputComponent(
             label: "Nome",
             onChange: (value) {
               var names = Utils.splitContactName(value);
 
-              // Definindo o primeiro nome
-              contact?.name.first = names.first;
-              // Definindo o segundo nome
-              contact?.name.last = names.length < 2 ? '' : names[1];
+              // Definindo o primeiro
+              contact.name.first = names.first;
+              // Definindo o segundo
+              contact.name.last = names.length < 2 ? '' : names[1];
             },
-            initialValue: contact?.displayName,
+            initialValue:
+                contact.displayName.isNotEmpty ? contact.displayName : null,
           ),
           UiHelper.emptySpace(Spaces.small),
 
@@ -61,10 +65,16 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
           InputComponent(
             label: "Telefone",
             onChange: (value) {
-              contact?.phones.first.number = value;
+              if (contact.phones.isNotEmpty) {
+                contact.phones.first.number = value;
+              } else {
+                Phone phone = Phone(value);
+                contact.phones.add(phone);
+              }
             },
             inputType: TextInputType.phone,
-            initialValue: contact?.phones.first.number,
+            initialValue:
+                contact.phones.isNotEmpty ? contact.phones.first.number : null,
           ),
           UiHelper.emptySpace(Spaces.small),
 
@@ -72,14 +82,16 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
           InputComponent(
             label: "Telefone Secundário",
             onChange: (value) {
-              if (contact != null && contact.phones.length > 1) {
+              if (contact.phones.length > 1) {
                 contact.phones[1].number = value;
+              } else {
+                Phone phone = Phone(value);
+                contact.phones.add(phone);
               }
             },
             inputType: TextInputType.phone,
-            initialValue: contact != null && contact.phones.length > 1
-                ? contact.phones[1].number
-                : null,
+            initialValue:
+                contact.phones.length > 1 ? contact.phones[1].number : null,
           ),
           UiHelper.emptySpace(Spaces.small),
 
@@ -87,14 +99,16 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
           InputComponent(
             label: "Email",
             onChange: (value) {
-              if (contact != null && contact.emails.isNotEmpty) {
+              if (contact.emails.isNotEmpty) {
                 contact.emails.first.address = value;
+              } else {
+                Email email = Email(value);
+                contact.emails.add(email);
               }
             },
             inputType: TextInputType.emailAddress,
-            initialValue: contact != null && contact.emails.isNotEmpty
-                ? contact.emails.first.address
-                : null,
+            initialValue:
+                contact.emails.isNotEmpty ? contact.emails.first.address : null,
           ),
           UiHelper.emptySpace(Spaces.small),
 
@@ -102,12 +116,15 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
           InputComponent(
             label: "Endereço",
             onChange: (value) {
-              if (contact != null && contact.addresses.isNotEmpty) {
+              if (contact.addresses.isNotEmpty) {
                 contact.addresses.first.address = value;
+              } else {
+                Address address = Address(value);
+                contact.addresses.add(address);
               }
             },
             inputType: TextInputType.streetAddress,
-            initialValue: contact != null && contact.addresses.isNotEmpty
+            initialValue: contact.addresses.isNotEmpty
                 ? contact.addresses.first.address
                 : null,
           ),
@@ -122,7 +139,7 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
           UiHelper.emptySpace(Spaces.medium),
 
           // Botões de ação
-          _buildActionButtons(),
+          _buildActionButtons(contact),
         ]),
       );
 
@@ -140,13 +157,13 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
             : null,
       );
 
-  _buildActionButtons() => Row(
+  _buildActionButtons(Contact? contact) => Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           TextButton(
             child: const Text("Cancelar"),
             onPressed: () {
-              _notifier!.setContact(null);
+              _notifier!.setContact(null, notify: false);
               Navigator.pop(context);
             },
           ),
@@ -161,7 +178,15 @@ class _CreateContactScreenState extends State<CreateContactScreen> {
                   _notifier!.setReload(true, notify: true);
                   Navigator.pop(context);
                 });
-              } else {}
+              } else {
+                await _controller.create(contact!).then((value) {
+                  _notifier!.setReload(true, notify: true);
+                  _notifier!.setContact(value);
+                  Navigator.pop(context);
+
+                  UiHelper.showSnackbar(context, "Contato criado com sucesso!");
+                });
+              }
             },
           ),
         ],

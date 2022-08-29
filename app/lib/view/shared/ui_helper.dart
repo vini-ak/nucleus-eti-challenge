@@ -21,4 +21,11 @@ class UiHelper {
         height: direction == VerticalDirection.down ? space : null,
         width: direction == VerticalDirection.up ? space : null,
       );
+
+  static showSnackbar(BuildContext context, String message) =>
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+        ),
+      );
 }

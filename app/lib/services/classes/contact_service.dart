@@ -5,10 +5,7 @@ import 'package:nucleus_agenda/services/interfaces/icontact_service.dart';
 
 class ContactService implements IContactService {
   @override
-  Future<Contact> create(contact) {
-    // TODO: implement create
-    throw UnimplementedError();
-  }
+  Future<Contact> create(contact) async => await contact.insert();
 
   @override
   Future<List<Contact>> list() async {

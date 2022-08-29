@@ -45,12 +45,20 @@ class _ContactItemComponentState extends State<ContactItemComponent> {
   }
 
   _buildBody() => Row(
+        mainAxisSize: MainAxisSize.max,
         children: [
           _contact.photo != null
               ? _buildContactImage(_contact.photo!)
               : _buildNoPhoto(),
           UiHelper.emptySpace(Spaces.small, direction: VerticalDirection.up),
-          Text(_contact.displayName),
+          Flexible(
+            child: Text(
+              _contact.displayName,
+              style: const TextStyle(
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
         ],
       );
 

@@ -12,4 +12,7 @@ class ContactController {
 
   Future<void> delete(Contact contact) async =>
       await _contactService.remove(contact);
+
+  Future<Contact> create(Contact contact) async =>
+      await _contactService.create(contact);
 }

@@ -6,13 +6,13 @@ class InputComponent extends StatefulWidget {
   final TextInputType? inputType;
   final Function(String value) onChange;
 
-  const InputComponent(
-      {Key? key,
-      required this.label,
-      required this.onChange,
-      this.initialValue,
-      this.inputType})
-      : super(key: key);
+  const InputComponent({
+    Key? key,
+    required this.label,
+    required this.onChange,
+    this.initialValue,
+    this.inputType,
+  }) : super(key: key);
 
   @override
   State<InputComponent> createState() => _InputComponentState();
@@ -62,6 +62,7 @@ class _InputComponentState extends State<InputComponent> {
       firstDate: now,
       lastDate: DateTime(now.year + 5),
     ).then((value) {
+      print("TEste");
       showTimePicker(context: context, initialTime: TimeOfDay.now());
     });
   }
